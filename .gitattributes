@@ -1,0 +1,18 @@
+# Normalise line endings so the scripts behave the same on every platform and a
+# clone does not show spurious whole-file diffs.
+#
+# The default here is LF. R reads either, but LF avoids the Windows
+# core.autocrlf=input round-trip rewriting every line on checkout.
+* text=auto eol=lf
+
+# Explicitly mark the code and docs as text, in case a Windows checkout would
+# otherwise leave them as CRLF and produce noise in diffs.
+*.R    text eol=lf
+*.md   text eol=lf
+*.ini  text eol=lf
+*.example text eol=lf
+
+# Binary data that must never be rewritten.
+*.xlsx binary
+*.tsv  binary
+*.fasta binary
