@@ -1,0 +1,142 @@
+# =============================================================================
+# config.ini.example
+#
+# Optional. Copy to config.ini and uncomment what you need; every value below
+# already shows the built-in default, so an empty (or absent) config.ini is a
+# valid configuration.
+#
+# Precedence: environment variable > config.ini > built-in default.
+# Example: BCR_MIN_ANCHOR_HARD=0.70 wins over the value in config.ini.
+#
+# Values are validated on load: a malformed or out-of-range number raises an
+# error instead of being silently ignored.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# run control
+# -----------------------------------------------------------------------------
+
+# Keep only heavy chains whose subclass is explicitly called IGHG1-4 by c_call.
+# FALSE additionally accepts IGHG without a subclass and IgG inferred from the
+# sequence_id, which is much more permissive.
+#BCR_STRICT_IGG_SUBCLASS_ONLY = TRUE
+
+# A file with fewer IGH records than this is reported and skipped rather than
+# analysed. Raise it if a donor file should never be that small.
+#BCR_MIN_IGH_ROWS = 20
+
+# -----------------------------------------------------------------------------
+# cell identity recovery from sequence_id
+# -----------------------------------------------------------------------------
+
+# Heavy and light reads are paired on the well identity recovered from the first
+# dot-separated field of sequence_id, with the chain marker stripped:
+#
+#   "A11H1.<run>.<...>"  ->  "A11"     heavy
+#   "A11K.<run>.<...>"   ->  "A11"     kappa
+#
+# The default pattern removes a trailing chain marker: an optional separator
+# followed by H with optional digits, or K, or L. A well genuinely called "H10"
+# is left intact because its H is not a suffix.
+#
+# This convention belongs to the sequencing run, not to the pipeline, so if your
+# ids differ, change this value rather than the scripts. Examples:
+#   "[-_ ]?VH$|[-_ ]?VL$"      for names ending in VH/VL
+#   "[.]?(H|K|L)$"             for a dot-separated chain marker
+#
+# Note: write the pattern without a trailing "$" if your editor or version
+# control mangles it; the pipeline anchors the match at the end itself.
+#BCR_CHAIN_SUFFIX_PATTERN = [-_ ]?(H\d*|K|L)
+
+# -----------------------------------------------------------------------------
+# terminal completion
+# -----------------------------------------------------------------------------
+
+# Residues that may be added to the N terminus from the V germline.
+# <= clean still qualifies for A/B; > hard is sent to manual review.
+#BCR_MAX_ADDED_N_CLEAN = 10
+#BCR_MAX_ADDED_N_HARD = 15
+
+# Residues that may be added to the C terminus from the J germline.
+#BCR_MAX_ADDED_C_CLEAN = 6
+#BCR_MAX_ADDED_C_HARD = 8
+
+# -----------------------------------------------------------------------------
+# alignment consistency
+# -----------------------------------------------------------------------------
+
+# Identity of the first 24 aa against the matched V germline.
+#BCR_MIN_ANCHOR_CLEAN = 0.75
+#BCR_MIN_ANCHOR_HARD = 0.65
+
+# Identity of the best suffix overlap against the matched J germline.
+#BCR_MIN_J_OVERLAP_CLEAN = 0.75
+#BCR_MIN_J_OVERLAP_HARD = 0.65
+
+# -----------------------------------------------------------------------------
+# plausible variable-domain length, amino acids
+# -----------------------------------------------------------------------------
+
+#BCR_VH_LEN_MIN = 105
+#BCR_VH_LEN_MAX = 140
+#BCR_VL_LEN_MIN = 95
+#BCR_VL_LEN_MAX = 125
+
+# -----------------------------------------------------------------------------
+# whole-variable-domain QC
+# -----------------------------------------------------------------------------
+
+# How many N-terminal residues to compare against the V germline.
+#BCR_WHOLE_V_PREFIX_LEN = 80
+
+# Below this identity the V region is flagged as abnormal.
+#BCR_MIN_WHOLE_V_IDENTITY_HARD = 0.60
+
+# A run of consecutive mismatches longer than this suggests a frameshift or an
+# indel that V and J each individually tolerate.
+#BCR_MAX_WHOLE_V_MISMATCH_RUN_HARD = 10
+
+# Framework length ranges. Intentionally loose: these exist to catch gross
+# anomalies, not to reproduce IMGT numbering.
+#BCR_FWR1_LEN_MIN = 15
+#BCR_FWR1_LEN_MAX = 35
+#BCR_FWR2_LEN_MIN = 10
+#BCR_FWR2_LEN_MAX = 25
+#BCR_FWR3_LEN_MIN = 25
+#BCR_FWR3_LEN_MAX = 55
+
+# -----------------------------------------------------------------------------
+# germline references
+# -----------------------------------------------------------------------------
+
+# Only 'human' is implemented.
+#BCR_SPECIES = human
+
+# FALSE = never touch the network; any missing reference becomes a hard error
+# with the exact URLs and commands to fetch it by hand.
+#BCR_DOWNLOAD_REFERENCE = TRUE
+
+# IMGT V-QUEST reference directory for Homo sapiens, IG locus.
+#BCR_IMGT_BASE_URL = https://www.imgt.org/download/V-QUEST/IMGT_V-QUEST_reference_directory/Homo_sapiens/IG
+
+# Per-attempt download timeout, seconds.
+#BCR_DOWNLOAD_TIMEOUT = 120
+
+# Record-count floors used to reject a truncated or outdated download.
+# Measured against the IMGT human release shipped in reference/:
+# IGHV 460, IGKV 132, IGLV 119, IGHJ 15, IGKJ 10, IGLJ 11, IGHD 47.
+#BCR_REF_MIN_IGHV = 300
+#BCR_REF_MIN_IGKV = 90
+#BCR_REF_MIN_IGLV = 80
+#BCR_REF_MIN_IGHJ = 10
+#BCR_REF_MIN_IGKJ = 6
+#BCR_REF_MIN_IGLJ = 6
+#BCR_REF_MIN_IGHD = 30
+
+# -----------------------------------------------------------------------------
+# step 2 only
+# -----------------------------------------------------------------------------
+
+# Path to the optional sample/cell_id request list. Defaults to
+# selected_cells.xlsx in the project root.
+#BCR_SELECTED_CELLS = selected_cells.xlsx

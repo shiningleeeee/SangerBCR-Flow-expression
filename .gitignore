@@ -1,0 +1,34 @@
+# =============================================================================
+# .gitignore -- IgG BCR expression-ready selection
+# =============================================================================
+
+# Donor input: IgBLAST TSVs are large and contain donor sequence data, so they
+# never leave the machine that produced them. No example dataset is shipped
+# either -- see README, "What this repository deliberately does not contain",
+# for what a fresh clone does on first run.
+data/
+
+# Pipeline outputs
+output/
+
+# Downloaded / cached germline references. These are IMGT data: keep them on
+# disk for the run, do not redistribute them from this repository.
+reference/
+
+# Optional manual request list
+selected_cells.xlsx
+
+# Local overrides of the tunable parameters
+config.ini
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
