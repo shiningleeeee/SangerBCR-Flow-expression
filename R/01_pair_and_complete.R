@@ -283,7 +283,8 @@ CFG$priority_ready <- c("A_priority", "B_acceptable")
 
 CFG$priority_whole_variable_risk <- c(
   "D_whole_variable_frame_risk_manual_check",
-  "D_abnormal_variable_domain_manual_check"
+  "D_abnormal_variable_domain_manual_check",
+  "D_conserved_cys_manual_check"
 )
 
 
@@ -1145,6 +1146,22 @@ count_extra_cdr3_cys <- function(seq_vec, source_vec) {
     SIMPLIFY = TRUE,
     USE.NAMES = FALSE
   )
+}
+
+# Whether the extra-cysteine counter above says nothing about: can the two
+# conserved cysteines that hold an immunoglobulin domain together actually be
+# found? A chain that LOST one of them scores zero extras, so an extras-only
+# check reads it as clean. junction_aa begins with the CDR3 cysteine whenever
+# the boundary is right, so it answers the 3' half directly.
+#
+# NA means the input carried no junction_aa for that chain; that is left
+# unknown rather than failed, and the caller falls back to the cysteine count.
+junction_cys_ok <- function(x) {
+  aa <- clean_aa(x)
+  out <- rep(NA, length(aa))
+  has <- aa != ""
+  out[has] <- str_starts(aa[has], "C")
+  out
 }
 
 # Recover the cell identity from a sequence_id.
@@ -2168,6 +2185,26 @@ process_one_sample <- function(sample_name, file) {
         TRUE ~ "multiple_extra_Cys_manual_check"
       ),
 
+      # Presence of the two conserved cysteines, which the extra-cysteine
+      # counting above cannot see. FR1's cysteine sits at 22 in the heavy chain
+      # and at 22 or 23 in the light chain, and a completed sequence can start a
+      # residue either side of it, so a window is searched rather than one
+      # position. Without this, a chain broken between FR1 and FR2 keeps a
+      # plausible length, an intact FR4 and a 0.9 whole-V identity, and reaches
+      # expression unable to fold.
+      heavy_n_cys = str_count(final_VH_aa, "C"),
+      light_n_cys = str_count(final_VL_aa, "C"),
+      heavy_fr1_cys_ok = str_detect(substr(final_VH_aa, 19, 26), "C"),
+      light_fr1_cys_ok = str_detect(substr(final_VL_aa, 19, 26), "C"),
+      heavy_junction_cys_ok = junction_cys_ok(heavy_junction_aa_raw),
+      light_junction_cys_ok = junction_cys_ok(light_junction_aa_raw),
+
+      cys_pair_ok =
+        heavy_n_cys >= 2 & light_n_cys >= 2 &
+        heavy_fr1_cys_ok & light_fr1_cys_ok &
+        (is.na(heavy_junction_cys_ok) | heavy_junction_cys_ok) &
+        (is.na(light_junction_cys_ok) | light_junction_cys_ok),
+
       VH_FR4_tail = last_n(final_VH_aa, 16),
       VL_FR4_tail = last_n(final_VL_aa, 16),
 
@@ -2283,6 +2320,11 @@ process_one_sample <- function(sample_name, file) {
           "D_large_terminal_gap_manual_check",
         !heavy_anchor_hard | !light_anchor_hard | !heavy_j_hard | !light_j_hard ~
           "D_low_alignment_manual_check",
+        # A missing conserved cysteine is a whole-domain defect, so it is
+        # graded D and sits above the C checks: length, FR4 tail and the
+        # extra-cysteine count can all look acceptable on a chain that can no
+        # longer fold.
+        !cys_pair_ok ~ "D_conserved_cys_manual_check",
         !VH_len_ok | !VL_len_ok ~ "C_length_manual_check",
         !VH_FR4_typical | !VL_FR4_typical ~ "C_FR4_tail_manual_check",
         cys_risk == "multiple_extra_Cys_manual_check" ~
@@ -2412,6 +2454,13 @@ process_one_sample <- function(sample_name, file) {
       heavy_extra_cys_n,
       light_extra_cys_n,
       cys_risk,
+      heavy_n_cys,
+      light_n_cys,
+      heavy_fr1_cys_ok,
+      light_fr1_cys_ok,
+      heavy_junction_cys_ok,
+      light_junction_cys_ok,
+      cys_pair_ok,
 
       heavy_junction_nt,
       light_junction_nt,

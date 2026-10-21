@@ -55,7 +55,8 @@ output_xlsx <- file.path(output_dir, "IgG_BCR_simplified_for_expression.xlsx")
 ready_priorities_fallback <- c("A_priority", "B_acceptable")
 whole_variable_risk_fallback <- c(
   "D_whole_variable_frame_risk_manual_check",
-  "D_abnormal_variable_domain_manual_check"
+  "D_abnormal_variable_domain_manual_check",
+  "D_conserved_cys_manual_check"
 )
 
 ensure_dir <- function(path) {

@@ -142,7 +142,7 @@ Step 2 writes `output/IgG_BCR_simplified_for_expression.xlsx`:
 | `A_priority` | clean: small terminal completion, high V/J identity, typical length and FR4 |
 | `B_acceptable` | same, with looser completion and identity thresholds |
 | `C_*_manual_check` | length, FR4 tail or extra-cysteine anomaly |
-| `D_*_manual_check` | frame risk, abnormal variable domain, low alignment, large gap, or multi-pairing |
+| `D_*_manual_check` | frame risk, abnormal variable domain, missing conserved cysteine, low alignment, large gap, or multi-pairing |
 
 The checks behind A and B, all of which must hold:
 
@@ -154,7 +154,19 @@ The checks behind A and B, all of which must hold:
 | J overlap identity (H and L) | ≥ 0.80 | ≥ 0.75 |
 | VH length / VL length | 105–140 / 95–125 | same |
 | FR4 tail motif | `WG[QR]G` (H), `FGQG\|FGGG\|FGTG\|FGPG\|FGEG` (L) | same |
+| conserved cysteines (FR1 and CDR3 5′, H and L) | must be present | same |
 | whole-variable-domain QC | must not be bad | same |
+
+Both conserved cysteines must be found in each chain. This is a separate check
+from the extra-cysteine count, and it is deliberately graded `D`: a chain that
+lost one of the two scores zero *extra* cysteines, keeps a plausible length and
+an intact FR4 tail, and can still reach a whole-variable identity above 0.90, so
+no other check notices. FR1's cysteine sits at position 22 in the heavy chain and
+at 22 or 23 in the light chain, and a completed sequence can begin a residue
+either side of it, so a window is searched rather than a single position; the CDR3
+cysteine is read off `junction_aa`. A pair that fails becomes
+`D_conserved_cys_manual_check`, and the evidence is in `heavy_n_cys`,
+`light_n_cys`, `*_fr1_cys_ok`, `*_junction_cys_ok` and `cys_pair_ok`.
 
 ### `final_VH_aa` is NA unless the row is A/B
 
@@ -242,7 +254,9 @@ for your own data rather than assuming a given A/B count is the right one.
   single-cell sorted plates are assumed.
 - **Extra-cysteine counting** treats `cdr3_aa` and `junction_aa` differently,
   as AIRR defines them, so a junction-derived count does not subtract a cysteine
-  that was never there.
+  that was never there. It counts surplus cysteines only: whether the two
+  conserved cysteines are present is the separate check above, and losing one of
+  them grades the pair `D` instead of reading as zero extras.
 - **Significance is not assessed.** Two cells with identical variable regions
   are not collapsed, and no clonal relationship is inferred.
 - **`translate_best_frame` uses an empirical score** (FR4 motif rewarded
@@ -378,7 +392,7 @@ Windows 上请务必在项目目录内运行。在某些机器上，Rscript 从 
 | `A_priority` | 干净：补齐量小、V/J 一致性高、长度与 FR4 正常 |
 | `B_acceptable` | 同上，但补齐量与一致性阈值放宽 |
 | `C_*_manual_check` | 长度、FR4 尾部或额外半胱氨酸异常 |
-| `D_*_manual_check` | 读框风险、可变区异常、比对过低、缺口过大或多重配对 |
+| `D_*_manual_check` | 读框风险、可变区异常、保守半胱氨酸缺失、比对过低、缺口过大或多重配对 |
 
 A 与 B 需要同时满足的检查：
 
@@ -390,7 +404,16 @@ A 与 B 需要同时满足的检查：
 | J overlap 一致性（重/轻） | ≥ 0.80 | ≥ 0.75 |
 | VH 长度 / VL 长度 | 105–140 / 95–125 | 相同 |
 | FR4 尾部基序 | 重链 `WG[QR]G`，轻链 `FGQG\|FGGG\|FGTG\|FGPG\|FGEG` | 相同 |
+| 保守半胱氨酸（FR1 与 CDR3 5′，重/轻） | 必须存在 | 相同 |
 | 整条可变区 QC | 不得为异常 | 相同 |
+
+两条保守半胱氨酸必须在每条链上都能找到。这是独立于“额外半胱氨酸计数”的一项检查，
+且刻意判为 `D`：丢掉其中一个的链，“额外”半胱氨酸计数为 0，长度看着正常，FR4 尾部
+完整，整条可变区一致性仍可能高于 0.90，其余检查都发现不了。FR1 的半胱氨酸在重链位于
+第 22 位，在轻链位于第 22 或 23 位，而补齐后的序列可能在其前后各差一个残基，所以按
+窗口搜索而不是比对单一位置；CDR3 的半胱氨酸直接读 `junction_aa` 的首位。不通过的对
+记为 `D_conserved_cys_manual_check`，证据在 `heavy_n_cys`、`light_n_cys`、
+`*_fr1_cys_ok`、`*_junction_cys_ok` 与 `cys_pair_ok` 列。
 
 ### 非 A/B 的行，`final_VH_aa` 是 NA
 
