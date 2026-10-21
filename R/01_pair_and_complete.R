@@ -161,11 +161,6 @@ cfg_int <- function(key, default, min = 0L, max = .Machine$integer.max) {
 
 CFG$strict_igg_subclass_only <- cfg_lgl("BCR_STRICT_IGG_SUBCLASS_ONLY", TRUE)
 
-# Minimum IGH records a file must contain to be accepted as a donor sample.
-# Below this the file is reported rather than silently used: it usually means
-# the wrong tsv was dropped into data/.
-CFG$min_igh_rows <- cfg_int("BCR_MIN_IGH_ROWS", 20L, min = 1L)
-
 # How to recover the cell/well identity from a sequence_id.
 #
 # A Sanger record id identifies the well and the chain, for example
@@ -418,7 +413,7 @@ read_tsv_header <- function(path) {
 
 # --- inspection --------------------------------------------------------------
 
-inspect_candidate <- function(path, cfg = CFG) {
+inspect_candidate <- function(path) {
   stem <- stem_of(path)
 
   res <- list(
@@ -486,14 +481,6 @@ inspect_candidate <- function(path, cfg = CFG) {
     return(res)
   }
 
-  # 4. weak but usable: too few heavy chains to be the intended donor file
-  if (!is.na(res$igh_rows) && res$igh_rows < cfg$min_igh_rows) {
-    res$status <- "rejected"
-    res$reason <- paste0("only ", res$igh_rows, " IGH record(s), below the ",
-                         cfg$min_igh_rows, "-record floor (BCR_MIN_IGH_ROWS)")
-    return(res)
-  }
-
   res
 }
 
@@ -551,7 +538,7 @@ discover_samples <- function(data_dir = CFG$data_dir, cfg = CFG) {
     )
   }
 
-  inspected <- lapply(files, inspect_candidate, cfg = cfg)
+  inspected <- lapply(files, inspect_candidate)
 
   report <- do.call(rbind, lapply(inspected, function(x) {
     data.frame(

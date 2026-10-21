@@ -21,10 +21,6 @@
 # sequence_id, which is much more permissive.
 #BCR_STRICT_IGG_SUBCLASS_ONLY = TRUE
 
-# A file with fewer IGH records than this is reported and skipped rather than
-# analysed. Raise it if a donor file should never be that small.
-#BCR_MIN_IGH_ROWS = 20
-
 # -----------------------------------------------------------------------------
 # cell identity recovery from sequence_id
 # -----------------------------------------------------------------------------

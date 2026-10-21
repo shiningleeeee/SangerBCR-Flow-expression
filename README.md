@@ -45,8 +45,8 @@ For each donor file, independently:
 
 ### Requirements
 
-- R 4.6 (tested) with `readr`, `dplyr`, `stringr`, `writexl`, and `readxl` for
-  step 2.
+- R 4.3 or newer, with `readr`, `dplyr`, `stringr`, `writexl`, and `readxl` for
+  step 2. Tested on R 4.3.3 and 4.6.
 - Internet access **only** if a germline reference is missing locally. The
   pipeline runs fully offline when `reference/` is populated.
 
@@ -319,8 +319,8 @@ Sanger 测序经常丢掉 V 区开头的几个密码子和 J 区末尾的几个�
 
 ### 环境要求
 
-- R 4.6（已验证），需要 `readr`、`dplyr`、`stringr`、`writexl`，第二步另外需要
-  `readxl`。
+- R 4.3 及以上，需要 `readr`、`dplyr`、`stringr`、`writexl`，第二步另外需要
+  `readxl`（在 R 4.3.3 与 4.6 上验证）。
 - **仅当**本地缺少胚系参考文件时才需要联网。`reference/` 已就位时可完全离线运行。
 
 ### 快速开始
